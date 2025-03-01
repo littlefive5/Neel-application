@@ -36,30 +36,16 @@ def find_thought_text(text):
     return text[:end_idx].strip()
 
 def compute_entropy(model, tokenizer, text):
-    """计算文本的熵值
-    
-    Args:
-        model: 预训练模型
-        tokenizer: 分词器
-        text: 输入文本
-    Returns:
-        float: 平均熵值
-    """
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
     with torch.no_grad():
         outputs = model(**inputs)
     
-    # 获取最后一个token的logits
-    # logits = outputs.logits[0]
     logits = outputs.logits[0, :-1] 
-    # 计算softmax概率
     probs = torch.softmax(logits, dim=-1)
-    # 将bfloat16转换为float32，然后再转换为numpy数组
     entropies = [entropy(p.cpu().float().numpy()) for p in probs]
     return np.mean(entropies)
 
 def main():
-    # 加载模型
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='navigate')
     args = parser.parse_args()
